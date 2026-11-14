@@ -9,3 +9,18 @@
 Потрібен .NET SDK 10.
 
     dotnet run
+
+## Карта назв
+
+| Роль у кістяку | У прикладі (CardTrainer) | Мій варіант (TrainingDiary) |
+|---|---|---|
+| Основний тип | Card | Exercise |
+| Різновид 1 | OpenAnswerCard | TimedExercise (на час) |
+| Різновид 2 | ChoiceCard | RepsExercise (на повторення) |
+| Різновид 3 | NumericCard | DistanceExercise (на дистанцію) |
+| Спільна дія | Check(given) | CalculateLoad(amount) |
+| Набір записів | List<Card> deck | List<Exercise> exercises |
+| Сховище | ICardStorage | IExerciseStorage |
+| Порядок перебору | IReviewStrategy | IExerciseOrder |
+| Підсумок | SessionSummary | WorkoutSummary |
+| Різновид 4 (ЛР 8) | TrueFalseCard | IntervalExercise (на інтервали) |
