@@ -1,24 +1,21 @@
 using System.Runtime.InteropServices;
 using TrainingDiary.Exercises;
+using TrainingDiary.Ordering;
+using TrainingDiary.Storage;
 using TrainingDiary.Workout;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 Console.WriteLine("Щоденник тренувань");
 Console.WriteLine($"Платформа: {RuntimeInformation.OSDescription}");
 
-var exercises = new List<Exercise>
-{
-    new RepsExercise(1, "Присідання", 0.5, 2, "Звичайні", "Зі стрибком", "З обтяженням")
-        { Category = "Сила" },
-    new TimedExercise(2, "Планка", 3) { Category = "Сила" },
-    new DistanceExercise(3, "Біг", 10, 5) { Category = "Кардіо" },
-    new TimedExercise(4, "Скакалка", 8, 60) { Category = "Кардіо" },
-    new DistanceExercise(5, "Велосипед", 4) { Category = "Кардіо" }
-};
+// Тут і тільки тут вирішують, з чого складається щоденник.
+IExerciseStorage storage = new SampleExerciseStorage();
+IExerciseOrder order = new ByCategoryOrder();
 
-Console.WriteLine($"Вправ у щоденнику: {exercises.Count}.");
+var session = new WorkoutSession(storage, order);
+var exercises = session.Exercises();
 
-var summary = new WorkoutSummary(0, 0, 0);
+Console.WriteLine($"Вправ: {exercises.Count}, порядок: {session.OrderName}.");
 
 foreach (var exercise in exercises)
 {
@@ -32,17 +29,25 @@ foreach (var exercise in exercises)
 
     Console.Write($"{exercise.Prompt}: ");
     var given = Console.ReadLine() ?? "";
-    var load = exercise.CalculateLoad(given);
-
-    summary += load;
+    var load = session.Record(exercise, given);
 
     Console.WriteLine(load is null
         ? "Не вдалося розпізнати кількість — вправу пропущено."
         : $"Зараховано: {load:0.##} балів.");
 }
 
+var summary = session.Summary;
+
 Console.WriteLine();
 Console.WriteLine(
     $"Підсумок: виконано {summary.Done}, пропущено {summary.Skipped}, " +
     $"загальне навантаження {summary.TotalLoad:0.##} балів, " +
     $"у середньому {summary.AverageLoad:0.##}.");
+
+if (session.Skipped.Count > 0)
+{
+    Console.WriteLine("Повторити варто:");
+
+    foreach (var exercise in session.Skipped)
+        Console.WriteLine($" {exercise.Name}");
+}
