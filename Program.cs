@@ -1,51 +1,48 @@
 using System.Runtime.InteropServices;
-using System.Text;
 using TrainingDiary.Exercises;
+using TrainingDiary.Workout;
 
-Console.OutputEncoding = Encoding.UTF8;
+Console.OutputEncoding = System.Text.Encoding.UTF8;
 Console.WriteLine("Щоденник тренувань");
 Console.WriteLine($"Платформа: {RuntimeInformation.OSDescription}");
 
 var exercises = new List<Exercise>
 {
-    new Exercise(1, "Присідання", "повторень", 0.5) { Category = "Сила" },
-    new Exercise(2, "Планка", "хв", 3) { Category = "Сила" },
-    new Exercise(3, "Біг", "км", 10) { Category = "Кардіо" },
-    new Exercise(4, "Скакалка", "хв", 8) { Category = "Кардіо" }
+    new RepsExercise(1, "Присідання", 0.5, 2, "Звичайні", "Зі стрибком", "З обтяженням")
+        { Category = "Сила" },
+    new TimedExercise(2, "Планка", 3) { Category = "Сила" },
+    new DistanceExercise(3, "Біг", 10, 5) { Category = "Кардіо" },
+    new TimedExercise(4, "Скакалка", 8, 60) { Category = "Кардіо" },
+    new DistanceExercise(5, "Велосипед", 4) { Category = "Кардіо" }
 };
 
 Console.WriteLine($"Вправ у щоденнику: {exercises.Count}.");
 
-// Перелік збирають у буфер і друкують одним викликом.
-var list = new StringBuilder();
+var summary = new WorkoutSummary(0, 0, 0);
 
-foreach (var exercise in exercises)
-    list.AppendLine($" {exercise}");
-
-Console.Write(list.ToString());
-
-// Для кожної вправи питаємо кількість і обчислюємо навантаження.
 foreach (var exercise in exercises)
 {
     Console.WriteLine();
-    Console.WriteLine($"{exercise.Name}");
-    Console.Write($"Скільки ({exercise.Unit}): ");
-    var given = Console.ReadLine() ?? "";
+    Console.WriteLine(exercise);
+    Console.WriteLine($"Навантаження: {exercise.LoadRule}");
 
+    if (exercise is RepsExercise reps)
+        for (var n = 1; n <= reps.Variants.Count; n++)
+            Console.WriteLine($" {n}. {reps[n]}{(n == reps.Variant ? "  ← обрано" : "")}");
+
+    Console.Write($"{exercise.Prompt}: ");
+    var given = Console.ReadLine() ?? "";
     var load = exercise.CalculateLoad(given);
 
+    summary += load;
+
     Console.WriteLine(load is null
-        ? "Не вдалося розпізнати кількість: потрібне невід’ємне число."
-        : $"Навантаження: {load:0.##} балів.");
+        ? "Не вдалося розпізнати кількість — вправу пропущено."
+        : $"Зараховано: {load:0.##} балів.");
 }
 
-// Пошук вправи за назвою: тут видно різницю між способами порівняння рядків.
 Console.WriteLine();
-Console.Write("Назва вправи для пошуку (Enter — пропустити): ");
-var query = Console.ReadLine() ?? "";
-
-if (query.Trim().Length > 0)
-{
-    var found = exercises.Find(e => e.HasName(query));
-    Console.WriteLine(found is null ? "Такої вправи немає." : $"Знайдено: {found}");
-}
+Console.WriteLine(
+    $"Підсумок: виконано {summary.Done}, пропущено {summary.Skipped}, " +
+    $"загальне навантаження {summary.TotalLoad:0.##} балів, " +
+    $"у середньому {summary.AverageLoad:0.##}.");
