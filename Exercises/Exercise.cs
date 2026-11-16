@@ -2,49 +2,48 @@ using System.Globalization;
 
 namespace TrainingDiary.Exercises;
 
-/// <summary>Одна вправа: назва, категорія, одиниця виміру й навантаження за одиницю.</summary>
-public class Exercise
+/// <summary>Спільна основа всіх вправ: те, що є в кожної.</summary>
+public abstract class Exercise
 {
     public int Id { get; set; }
     public string Name { get; set; } = "";
     public string Category { get; set; } = "Загальна";
 
-    /// <summary>Одиниця виміру: «хв», «повторень», «км».</summary>
-    public string Unit { get; set; } = "";
+    protected Exercise() { }
 
-    /// <summary>Скільки балів навантаження дає одна одиниця виміру.</summary>
-    public double LoadPerUnit { get; set; }
-
-    public Exercise() { }
-
-    public Exercise(int id, string name, string unit, double loadPerUnit)
+    protected Exercise(int id, string name)
     {
         Id = id;
         Name = name;
-        Unit = unit;
-        LoadPerUnit = loadPerUnit;
     }
 
     /// <summary>
     /// Обчислює навантаження за кількістю, яку ввів користувач (рядком).
-    /// Повертає null, якщо рядок не є невід’ємним числом.
+    /// Кожен різновид — по-своєму. Повертає null, якщо введення некоректне.
     /// </summary>
-    public double? CalculateLoad(string given)
+    public abstract double? CalculateLoad(string given);
+
+    /// <summary>Як рахується навантаження, текстом — для показу.</summary>
+    public abstract string LoadRule { get; }
+
+    /// <summary>Підказка, що вводити. Різновид може змінити.</summary>
+    public virtual string Prompt => "Кількість";
+
+    /// <summary>
+    /// Читає число за налаштуваннями системи, а якщо не вийшло — за незмінними правилами.
+    /// Нескінченності й NaN не приймаються.
+    /// </summary>
+    protected static bool TryParseNumber(string text, out double value)
     {
-        // Українською десяткову частину пишуть через кому, тож приймаємо і кому, і крапку.
-        var text = given.Trim().Replace(',', '.');
+        var trimmed = text.Trim();
 
-        if (!double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var amount)
-            || !double.IsFinite(amount)
-            || amount < 0)
-            return null;
+        var ok = double.TryParse(trimmed, NumberStyles.Float,
+                     CultureInfo.CurrentCulture, out value)
+              || double.TryParse(trimmed, NumberStyles.Float,
+                     CultureInfo.InvariantCulture, out value);
 
-        return amount * LoadPerUnit;
+        return ok && double.IsFinite(value);
     }
 
-    /// <summary>Чи збігається назва вправи з введеним текстом (без урахування регістру й пробілів по краях).</summary>
-    public bool HasName(string text) =>
-        string.Equals(text.Trim(), Name, StringComparison.CurrentCultureIgnoreCase);
-
-    public override string ToString() => $"#{Id} [{Category}] {Name}, {Unit}";
+    public override string ToString() => $"#{Id} [{Category}] {Name}";
 }
