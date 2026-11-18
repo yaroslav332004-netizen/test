@@ -29,6 +29,15 @@ public abstract class Exercise
     /// <summary>Підказка, що вводити. Різновид може змінити.</summary>
     public virtual string Prompt => "Кількість";
 
+    /// <summary>Позначка різновиду: під нею вправу пишуть у файл.</summary>
+    public abstract string Kind { get; }
+
+    /// <summary>Записує власні дані різновиду до словника.</summary>
+    public abstract void WriteData(IDictionary<string, string> data);
+
+    /// <summary>Читає власні дані різновиду зі словника.</summary>
+    public abstract void ReadData(IReadOnlyDictionary<string, string> data);
+
     /// <summary>
     /// Читає число за налаштуваннями системи, а якщо не вийшло — за незмінними правилами.
     /// Нескінченності й NaN не приймаються.
@@ -44,6 +53,24 @@ public abstract class Exercise
 
         return ok && double.IsFinite(value);
     }
+
+    /// <summary>
+    /// Число для файлу: завжди за незмінними правилами (з крапкою), хоч би яка мова в системі.
+    /// </summary>
+    protected static string WriteNumber(double value) =>
+        value.ToString(CultureInfo.InvariantCulture);
+
+    /// <summary>
+    /// Число з файлу: лише за незмінними правилами. Якщо ключа немає або там не число,
+    /// повертає запасне значення.
+    /// </summary>
+    protected static double ReadNumber(
+        IReadOnlyDictionary<string, string> data, string key, double fallback = 0) =>
+        data.TryGetValue(key, out var text)
+            && double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out var value)
+            && double.IsFinite(value)
+            ? value
+            : fallback;
 
     public override string ToString() => $"#{Id} [{Category}] {Name}";
 }

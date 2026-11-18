@@ -34,4 +34,18 @@ public class TimedExercise : Exercise
     public override string LoadRule => $"{PointsPerMinute:0.##} б. за хвилину (до {MaxMinutes:0.##} хв)";
 
     public override string Prompt => "Тривалість, хв";
+
+    public override string Kind => "timed";
+
+    public override void WriteData(IDictionary<string, string> data)
+    {
+        data["pointsPerMinute"] = WriteNumber(PointsPerMinute);
+        data["maxMinutes"] = WriteNumber(MaxMinutes);
+    }
+
+    public override void ReadData(IReadOnlyDictionary<string, string> data)
+    {
+        PointsPerMinute = ReadNumber(data, "pointsPerMinute");
+        MaxMinutes = ReadNumber(data, "maxMinutes", MaxMinutes);
+    }
 }

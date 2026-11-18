@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace TrainingDiary.Exercises;
 
 /// <summary>Вправа на повторення: навантаження залежить від кількості повторень і складності варіанта.</summary>
@@ -55,4 +57,38 @@ public class RepsExercise : Exercise
         $"{PointsPerRep:0.##} б. за повторення, варіант «{this[ValidVariant]}» ×{VariantFactor:0.##}";
 
     public override string Prompt => "Кількість повторень";
+
+    public override string Kind => "reps";
+
+    public override void WriteData(IDictionary<string, string> data)
+    {
+        // Роздільник ";" не може трапитися всередині значення:
+        // інакше під час читання варіантів стане більше, ніж було.
+        foreach (var variant in Variants)
+            if (variant.Contains(';'))
+                throw new InvalidOperationException(
+                    $"Назва варіанта «{variant}» містить ';'.");
+
+        data["pointsPerRep"] = WriteNumber(PointsPerRep);
+        data["variant"] = Variant.ToString(CultureInfo.InvariantCulture);
+        data["variants"] = string.Join(";", Variants);
+    }
+
+    public override void ReadData(IReadOnlyDictionary<string, string> data)
+    {
+        PointsPerRep = ReadNumber(data, "pointsPerRep");
+        Variant = (int)ReadNumber(data, "variant", 1);
+
+        if (data.TryGetValue("variants", out var text))
+        {
+            var variants = text.Split(';', StringSplitOptions.RemoveEmptyEntries);
+
+            // Порожній перелік не підставляємо: лишаються варіанти за замовчуванням.
+            if (variants.Length > 0)
+            {
+                Variants.Clear();
+                Variants.AddRange(variants);
+            }
+        }
+    }
 }

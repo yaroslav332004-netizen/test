@@ -25,7 +25,8 @@ public class WorkoutSession
     public string OrderName => order.Name;
 
     /// <summary>Вправи в порядку, який задав порядок перебору.</summary>
-    public List<Exercise> Exercises() => order.Order(storage.Load());
+    public async Task<List<Exercise>> ExercisesAsync() =>
+        order.Order(await storage.LoadAsync());
 
     /// <summary>
     /// Зараховує результат вправи й повертає навантаження.

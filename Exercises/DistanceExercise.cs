@@ -45,4 +45,18 @@ public class DistanceExercise : Exercise
             : $"{PointsPerKm:0.##} б. за км";
 
     public override string Prompt => "Дистанція, км";
+
+    public override string Kind => "distance";
+
+    public override void WriteData(IDictionary<string, string> data)
+    {
+        data["pointsPerKm"] = WriteNumber(PointsPerKm);
+        data["bonusFromKm"] = WriteNumber(BonusFromKm);
+    }
+
+    public override void ReadData(IReadOnlyDictionary<string, string> data)
+    {
+        PointsPerKm = ReadNumber(data, "pointsPerKm");
+        BonusFromKm = ReadNumber(data, "bonusFromKm");
+    }
 }

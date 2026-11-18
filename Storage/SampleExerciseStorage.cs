@@ -2,12 +2,9 @@ using TrainingDiary.Exercises;
 
 namespace TrainingDiary.Storage;
 
-/// <summary>Тимчасове сховище: вправи задано просто в коді.</summary>
-public class SampleExerciseStorage : IExerciseStorage
+/// <summary>Джерело зразкових вправ для першого запуску.</summary>
+public class SampleExerciseStorage
 {
-    public List<Exercise> Load() => Exercises();
-
-    /// <summary>Зразкові вправи. Статичний метод: вони знадобляться й тому, хто до сховища не звертається.</summary>
     public static List<Exercise> Exercises() => new()
     {
         new RepsExercise(1, "Присідання", 0.5, 2, "Звичайні", "Зі стрибком", "З обтяженням")

@@ -5,5 +5,6 @@ namespace TrainingDiary.Storage;
 /// <summary>Звідки беруться вправи: файл чи пам’ять — ядро не знає.</summary>
 public interface IExerciseStorage
 {
-    List<Exercise> Load();
+    Task<List<Exercise>> LoadAsync();
+    Task SaveAsync(List<Exercise> exercises);
 }
