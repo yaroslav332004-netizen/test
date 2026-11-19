@@ -1,0 +1,26 @@
+name: Build
+
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Збирання розв’язку
+        run: dotnet build TrainingDiary.sln
+      - name: Запуск застосунку (відповіді з каналу)
+        shell: bash
+        run: printf '5\n5\n5\n5\n5\n' | dotnet run --no-build --project TrainingDiary.App
+      - name: Пакет бібліотеки
+        run: dotnet pack TrainingDiary.Core -c Release -o ./packages
+      - name: Другий застосунок із пакета
+        shell: bash
+        run: dotnet run --project tools/DiaryReport -- TrainingDiary.App/bin/Debug/net10.0/data/diary.json
